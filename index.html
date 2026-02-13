@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Sega Genesis via Nostalgist</title>
+    <style>
+        body { background: #000; margin: 0; display: flex; justify-content: center; align-items: center; height: 100vh; }
+        /* Nostalgist will automatically create a canvas inside the body */
+    </style>
+</head>
+<body>
+
+<script src="https://unpkg.com/nostalgist/dist/nostalgist.js"></script>
+
+<script>
+    async function runGame() {
+        const nostalgist = await Nostalgist.genesis({
+            // Replace with the actual URL to your ROM file
+            rom: 'https://example.com/path-to-your-game.zip',
+            
+            // Optional: Customize controls or BIOS if needed
+        })
+    }
+
+    // Launch the emulator on window load
+    window.onload = runGame;
+</script>
+</body>
+</html>
