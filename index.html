@@ -3,84 +3,60 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sega Genesis Web Portal</title>
+    <title>Genesis File Player</title>
     <style>
-        body {
-            background-color: #111;
-            color: white;
-            font-family: sans-serif;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            height: 100vh;
-            margin: 0;
-        }
-        #ui-layer {
-            text-align: center;
-            z-index: 10;
-        }
-        button {
-            padding: 15px 30px;
-            font-size: 1.2rem;
-            background: #ed1c24;
-            color: white;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-            box-shadow: 0 4px #a51217;
-        }
-        button:active {
-            transform: translateY(2px);
-            box-shadow: 0 2px #a51217;
-        }
-        #status {
-            margin-top: 15px;
-            color: #888;
-        }
-        canvas {
-            image-rendering: pixelated;
-            max-width: 90vw;
-            max-height: 80vh;
-        }
+        body { background: #111; color: white; font-family: sans-serif; text-align: center; margin: 0; padding: 20px; }
+        .controls { background: #222; padding: 20px; border-radius: 10px; display: inline-block; margin-bottom: 20px; border: 1px solid #444; }
+        input[type="file"] { margin: 10px 0; color: #ccc; }
+        #game-screen { margin-top: 20px; display: flex; justify-content: center; }
+        canvas { box-shadow: 0 0 20px rgba(0,0,0,0.5); border: 2px solid #333; max-width: 100%; }
+        .hidden { display: none; }
     </style>
 </head>
 <body>
 
-    <div id="ui-layer">
-        <h1>GENESIS WEB PLAYER</h1>
-        <button id="launch-btn">START EMULATOR</button>
-        <p id="status">Waiting for user...</p>
+    <div id="setup-area" class="controls">
+        <h1>Sega Genesis Player</h1>
+        <p>Select a .md or .bin file to start</p>
+        <input type="file" id="rom-upload" accept=".md,.bin,.gen,.zip">
+        <div id="status">Ready</div>
     </div>
+
+    <div id="game-screen"></div>
 
     <script src="https://unpkg.com/nostalgist/dist/nostalgist.js"></script>
 
     <script>
-        const launchBtn = document.getElementById('launch-btn');
+        const fileInput = document.getElementById('rom-upload');
         const status = document.getElementById('status');
+        const screen = document.getElementById('game-screen');
+        let instance = null;
 
-        launchBtn.addEventListener('click', async () => {
-            status.innerText = 'Loading Core & ROM...';
-            launchBtn.style.display = 'none';
+        fileInput.addEventListener('change', async (e) => {
+            const file = e.target.files[0];
+            if (!file) return;
+
+            status.innerText = "Loading emulator...";
+            
+            // Clean up previous game if it exists
+            if (instance) {
+                instance.exit();
+                screen.innerHTML = '';
+            }
 
             try {
-                // Initialize Nostalgist
-                const nostalgist = await Nostalgist.genesis({
-                    // TEST ROM: Using a public homebrew demo
-                    rom: 'hhttps://github.com/Pitchfork7/gaingroundjs.github.io/releases/download/fileyoink/Gain.Ground.USA.2.zip',
-                    
-                    // Respond to the canvas being created
-                    element: document.createElement('canvas'),
-                });
-
-                status.innerText = 'Running!';
-                // Append the game canvas to the body
-                document.body.appendChild(nostalgist.getCanvas());
-
+                // We pass the actual File object directly to Nostalgist
+                instance = await Nostalgist.megadrive(file);
+                
+                // Hide the upload UI to focus on the game
+                document.getElementById('setup-area').classList.add('hidden');
+                
+                // Move the canvas to our screen div
+                screen.appendChild(instance.getCanvas());
+                status.innerText = "Running: " + file.name;
             } catch (err) {
                 console.error(err);
-                status.style.color = 'red';
-                status.innerText = 'Error: ' + err.message;
+                status.innerText = "Error: " + err.message;
             }
         });
     </script>
