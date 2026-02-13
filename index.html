@@ -1,28 +1,88 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-    <title>Sega Genesis via Nostalgist</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sega Genesis Web Portal</title>
     <style>
-        body { background: #000; margin: 0; display: flex; justify-content: center; align-items: center; height: 100vh; }
-        /* Nostalgist will automatically create a canvas inside the body */
+        body {
+            background-color: #111;
+            color: white;
+            font-family: sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            margin: 0;
+        }
+        #ui-layer {
+            text-align: center;
+            z-index: 10;
+        }
+        button {
+            padding: 15px 30px;
+            font-size: 1.2rem;
+            background: #ed1c24;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            box-shadow: 0 4px #a51217;
+        }
+        button:active {
+            transform: translateY(2px);
+            box-shadow: 0 2px #a51217;
+        }
+        #status {
+            margin-top: 15px;
+            color: #888;
+        }
+        canvas {
+            image-rendering: pixelated;
+            max-width: 90vw;
+            max-height: 80vh;
+        }
     </style>
 </head>
 <body>
 
-<script src="https://unpkg.com/nostalgist/dist/nostalgist.js"></script>
+    <div id="ui-layer">
+        <h1>GENESIS WEB PLAYER</h1>
+        <button id="launch-btn">START EMULATOR</button>
+        <p id="status">Waiting for user...</p>
+    </div>
 
-<script>
-    async function runGame() {
-        const nostalgist = await Nostalgist.genesis({
-            // Replace with the actual URL to your ROM file
-            rom: 'https://github.com/Pitchfork7/gaingroundjs.github.io/releases/download/fileyoink/Gain.Ground.USA.2.zip',
-            
-            // Optional: Customize controls or BIOS if needed
-        })
-    }
+    <script src="https://unpkg.com/nostalgist/dist/nostalgist.js"></script>
 
-    // Launch the emulator on window load
-    window.onload = runGame;
-</script>
+    <script>
+        const launchBtn = document.getElementById('launch-btn');
+        const status = document.getElementById('status');
+
+        launchBtn.addEventListener('click', async () => {
+            status.innerText = 'Loading Core & ROM...';
+            launchBtn.style.display = 'none';
+
+            try {
+                // Initialize Nostalgist
+                const nostalgist = await Nostalgist.genesis({
+                    // TEST ROM: Using a public homebrew demo
+                    rom: 'hhttps://github.com/Pitchfork7/gaingroundjs.github.io/releases/download/fileyoink/Gain.Ground.USA.2.zip',
+                    
+                    // Respond to the canvas being created
+                    element: document.createElement('canvas'),
+                });
+
+                status.innerText = 'Running!';
+                // Append the game canvas to the body
+                document.body.appendChild(nostalgist.getCanvas());
+
+            } catch (err) {
+                console.error(err);
+                status.style.color = 'red';
+                status.innerText = 'Error: ' + err.message;
+            }
+        });
+    </script>
 </body>
 </html>
